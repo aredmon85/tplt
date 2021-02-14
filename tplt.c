@@ -11,6 +11,7 @@
 #include <netdb.h>
 #include <signal.h>
 static volatile int execute = 1;
+static volatile int tc_modify = 0;
 extern int errno;
 void print_usage() {
 	printf("Usage: tplt <url> -s SOURCE_INTERFACE -c GET_COUNT -l LOSS -L (0-99) LATENCY (ms)\n");
@@ -22,14 +23,15 @@ void sig_handler(int val) {
 	execute = 0;
 }
 void cleanup(char* si) {
-	char clear_buf[256];
-	printf("Clearing latency and loss from interface %s\n",si);
-	snprintf(clear_buf,sizeof(clear_buf),"%s%s%s","tc qdisc del dev ",si," root");
-	if(system(clear_buf) != 0) {
-		printf("Failed to delete tc rules\n");
-		exit(EXIT_FAILURE);
+	if(tc_modify == 0) {
+		char clear_buf[256];
+		printf("Clearing latency and loss from interface %s\n",si);
+		snprintf(clear_buf,sizeof(clear_buf),"%s%s%s","tc qdisc del dev ",si," root");
+		if(system(clear_buf) != 0) {
+			printf("Failed to delete tc rules\n");
+			exit(EXIT_FAILURE);
+		};
 	};
-
 }
 int main(int argc, char *argv[]) {
 	char* url;
@@ -73,14 +75,17 @@ int main(int argc, char *argv[]) {
 	char add_buf[256];
 	if(loss > 0.0) {
 		snprintf(add_buf,sizeof(add_buf),"%s%s%s%f%s%d%s","tc qdisc add dev ",si," root netem loss ",loss,"% delay ",latency,"ms");
-	} else {
+	} else if (latency > 0) {
 		snprintf(add_buf,sizeof(add_buf),"%s%s%s%d%s","tc qdisc add dev ",si," root netem delay ",latency,"ms");
+	} else {
+		tc_modify = 1;
 	}
-	if(system(add_buf) != 0) {
-		printf("Failed to apply tc rules\n");
-		exit(EXIT_FAILURE);
-	}; 
-
+	if(tc_modify == 0) {
+		if(system(add_buf) != 0) {
+			printf("Failed to apply tc rules\n");
+			exit(EXIT_FAILURE);
+		}; 
+	}
 	struct timespec start, end;
 	CURL *curl;
 
@@ -104,14 +109,14 @@ int main(int argc, char *argv[]) {
 			exit(EXIT_FAILURE);
 		}
 		count++;
-		curl_easy_getinfo(curl, CURLINFO_HTTP_CODE, &return_code);
+		//curl_easy_getinfo(curl, CURLINFO_HTTP_CODE, &return_code);
 	};
 	
         //Take final time measurement
 	clock_gettime(CLOCK_MONOTONIC_RAW,&end);	
 	diff_time = (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_nsec - start.tv_nsec) / 1000;
 	printf("Total time to perform %d HTTP GET Requests: %u milliseconds\n",get_count,(diff_time/1000));	
-	
+	printf("Average response time: %d ms\n",(diff_time/1000)/get_count);
         //Cleanup
         curl_easy_cleanup(curl);
 	cleanup(si);
