@@ -11,7 +11,7 @@ Clearing latency and loss from interface vlan.10 <br />
 
 It's also possible to measure TCP's performance using tc to add both latency and loss to a netdev.  The data below represents varying conditions of loss and latency for a single stream of iperf3 over a 1Gbps interface.  The hosts tested run Ubuntu 18.04 and have the following characteristics:
 
-perftest1:~/tplt$ uname -a
+perftest1:~/tplt$ uname -a <br />
 Linux perftest1 4.15.0-99-generic #100-Ubuntu SMP Wed Apr 22 20:32:56 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux
 
 perftest1:~$ cat /proc/cpuinfo | grep model <br />
