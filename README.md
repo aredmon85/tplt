@@ -9,3 +9,5 @@ Attempting to perform 20 HTTP GET requests against ntest with a packet loss of 0
 Total time to perform 20 HTTP GET Requests: 9455 milliseconds
 
 Clearing latency and loss from interface vlan.10
+
+![alt text](https://github.com/aredmon/tplt/images/blob/main/loss_graph.png?raw=true)
