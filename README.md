@@ -10,5 +10,5 @@ Total time to perform 20 HTTP GET Requests: 9455 milliseconds
 
 Clearing latency and loss from interface vlan.10
 
-![alt text](https://github.com/aredmon/tplt/images/main/loss_graph.png?raw=true)
-![Alt text](images/loss_graph.png?raw=true "Loss")
+![Alt text](images/loss_graph.png?raw=true)
+![Alt text](images/loss_table.png?raw=true)
